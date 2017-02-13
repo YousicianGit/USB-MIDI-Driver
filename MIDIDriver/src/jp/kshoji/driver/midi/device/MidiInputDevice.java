@@ -30,7 +30,6 @@ public final class MidiInputDevice {
     private final UsbInterface usbInterface;
     final UsbEndpoint inputEndpoint;
 
-    private OnMidiInputEventListener midiEventListener;
 
     private final WaiterThread waiterThread;
 
@@ -63,14 +62,17 @@ public final class MidiInputDevice {
      * @param midiEventListener the OnMidiInputEventListener
      */
     public void setMidiEventListener(OnMidiInputEventListener midiEventListener) {
-        this.midiEventListener = midiEventListener;
+        suspend();
+        waiterThread.midiEventListener = midiEventListener;
+        resume();
     }
 
     /**
      * stops the watching thread
      */
     void stop() {
-        midiEventListener = null;
+        suspend();
+        waiterThread.midiEventListener = null;
         usbDeviceConnection.releaseInterface(usbInterface);
 
         waiterThread.stopFlag = true;
@@ -170,6 +172,7 @@ public final class MidiInputDevice {
         volatile boolean stopFlag;
         final Object suspendSignal = new Object();
         volatile boolean suspendFlag;
+        volatile OnMidiInputEventListener midiEventListener;
 
         /**
          * Constructor
@@ -185,7 +188,6 @@ public final class MidiInputDevice {
             final UsbEndpoint usbEndpoint = inputEndpoint;
             final int maxPacketSize = inputEndpoint.getMaxPacketSize();
             final MidiInputDevice sender = MidiInputDevice.this;
-            final OnMidiInputEventListener midiEventListener = MidiInputDevice.this.midiEventListener;
 
             // prepare buffer variables
             final byte[] bulkReadBuffer = new byte[maxPacketSize];
