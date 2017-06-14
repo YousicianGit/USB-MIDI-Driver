@@ -15,8 +15,8 @@ dependencies {
 }
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    buildToolsVersion rootProject.ext.buildToolsVersion
+    compileSdkVersion rootProject.ext.compileSdkVersion
 
     defaultConfig {
         minSdkVersion 12
